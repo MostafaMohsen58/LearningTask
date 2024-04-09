@@ -2,6 +2,7 @@
 using Learning.Hubs;
 using Learning.Models;
 using Learning.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -10,6 +11,7 @@ namespace Learning.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class LessonsController(IGenericService<Lesson, LessonDto> lessonService, IHubContext<LessonHub> lessonHubContext) : ControllerBase
     {
         private readonly IGenericService<Lesson, LessonDto> _lessonService= lessonService;
