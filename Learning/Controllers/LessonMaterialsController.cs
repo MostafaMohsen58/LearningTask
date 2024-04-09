@@ -1,24 +1,22 @@
 ﻿using Humanizer;
 using Learning.Dto;
+using Learning.Hubs;
 using Learning.Models;
 using Learning.Services;
 using Learning.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Learning.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class LessonMaterialsController : ControllerBase
+    public class LessonMaterialsController(IGenericService<Material, MaterialDto> materialService, IHubContext<LessonHub> lessonHubContext) : ControllerBase
     {
-        private readonly IGenericService<Material, MaterialDto> _materialService;
-
-        public LessonMaterialsController(IGenericService<Material, MaterialDto> materialService)
-        {
-            _materialService = materialService;
-        }
+        private readonly IGenericService<Material, MaterialDto> _materialService= materialService;
+        private readonly IHubContext<LessonHub> _LessonHubContext = lessonHubContext;
 
 
         // GET: api/lessonmaterials
@@ -76,6 +74,8 @@ namespace Learning.Controllers
             }
 
             await _materialService.UpdateAsync(id, material,dto);
+
+            await _LessonHubContext.Clients.All.SendAsync("LessonMaterialUpdated", id);
 
             return Ok("Updated successfully");
         }

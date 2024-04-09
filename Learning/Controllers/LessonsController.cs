@@ -1,21 +1,20 @@
 ﻿using Learning.Dto;
+using Learning.Hubs;
 using Learning.Models;
 using Learning.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Learning.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class LessonsController : ControllerBase
+    public class LessonsController(IGenericService<Lesson, LessonDto> lessonService, IHubContext<LessonHub> lessonHubContext) : ControllerBase
     {
-        private readonly IGenericService<Lesson, LessonDto> _lessonService;
+        private readonly IGenericService<Lesson, LessonDto> _lessonService= lessonService;
+        private readonly IHubContext<LessonHub> _LessonHubContext = lessonHubContext;
 
-        public LessonsController(IGenericService<Lesson, LessonDto> lessonService)
-        {
-            _lessonService = lessonService;
-        }
 
         // GET: api/lessons
         [HttpGet]
@@ -75,6 +74,8 @@ namespace Learning.Controllers
                 return NotFound();
 
             await _lessonService.UpdateAsync(id, lesson , dto);
+
+            await _LessonHubContext.Clients.All.SendAsync("LessonUpdated", lesson.Id);
 
             return Ok("Updated successfully");
         }
